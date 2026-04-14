@@ -96,7 +96,7 @@ def render_tab(years):
                     "MDD": st.column_config.NumberColumn(format="%.1f%%"),
                     "회복률": st.column_config.NumberColumn(format="%.1f%%"),
                     "수익률": st.column_config.NumberColumn(format="%.1f%%"),
-                    "점수": st.column_config.NumberColumn(format="%.1"),
+                    "점수": st.column_config.NumberColumn(format="%.1f"),
                     "시총($B)": st.column_config.NumberColumn(format="$%.1f B")
                 }
             )
