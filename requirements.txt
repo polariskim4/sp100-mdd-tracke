@@ -1,4 +1,4 @@
 streamlit
-yfinance
+yfinance>=0.2.40  # 최신 버전 지정
 pandas
 pytz
