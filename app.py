@@ -27,16 +27,15 @@ def get_sp100_tickers():
         st.error(f"리스트 갱신 실패: {e}")
         return ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "BRK-B", "UNH", "LLY"]
 
-# 3. 데이터 분석 함수 (시가총액 로직 제거로 속도 최적화)
+# 3. 데이터 분석 함수
 @st.cache_data(ttl=3600)
 def fetch_analysis(years):
     tickers = get_sp100_tickers()
-    # 주가 데이터 일괄 다운로드 (이 부분은 한 번의 요청으로 처리되어 빠릅니다)
+    # 주가 데이터 일괄 다운로드
     data = yf.download(tickers, period=f"{years}y", interval="1d", progress=False)
     
     results = []
     
-    # 각 티커별 계산
     for t in tickers:
         try:
             close_series = data['Close'][t].dropna()
@@ -56,6 +55,7 @@ def fetch_analysis(years):
                 "신호": "🔥 적극매수" if score >= 20 else "🟢 매수" if score >= 10 else "🟡 진입",
                 "티커": t, 
                 "현재가": current_val, 
+                "고가/저가": f"${high_val:.2f} / ${low_val:.2f}", # 신규 추가
                 "MDD": mdd, 
                 "회복률": rec, 
                 "수익률": chg, 
@@ -75,11 +75,15 @@ def render_tab(years):
     with st.spinner(f"{years}년 데이터 분석 중..."):
         df = fetch_analysis(years)
         if not df.empty:
+            # 칼럼 순서 명시적 지정 (현재가 옆에 고가/저가 배치)
+            display_cols = ["신호", "티커", "현재가", "고가/저가", "MDD", "회복률", "수익률", "점수"]
+            
             st.dataframe(
-                df.sort_values("점수", ascending=False),
+                df[display_cols].sort_values("점수", ascending=False),
                 use_container_width=True, hide_index=True,
                 column_config={
                     "현재가": st.column_config.NumberColumn(format="$%.2f"),
+                    "고가/저가": st.column_config.TextColumn("기간 내 고가 / 저가"), # 텍스트 형식으로 출력
                     "MDD": st.column_config.NumberColumn(format="%.1f%%"),
                     "회복률": st.column_config.NumberColumn(format="%.1f%%"),
                     "수익률": st.column_config.NumberColumn(format="%.1f%%"),
